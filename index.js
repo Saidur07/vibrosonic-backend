@@ -8,7 +8,12 @@ const app = express();
 // Middleware for parsing JSON
 app.use(express.json());
 // Enable CORS
-app.use(cors());
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
 
 // Connect to MongoDB
 mongoose.connect("mongodb://localhost:27017/demoapp", {
