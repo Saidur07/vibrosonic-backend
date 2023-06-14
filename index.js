@@ -1,11 +1,14 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
+const cors = require("cors");
 
 const app = express();
 
 // Middleware for parsing JSON
 app.use(express.json());
+// Enable CORS
+app.use(cors());
 
 // Connect to MongoDB
 mongoose.connect("mongodb://localhost:27017/demoapp", {
