@@ -34,42 +34,70 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Array of user objects
+const users = [
+  {
+    id: 1,
+    name: "Saidur Rahman",
+    email: "saidurhere@gmail.com",
+    password: "abcd1234",
+  },
+  {
+    id: 2,
+    name: "Saidur Rahman2",
+    email: "saidurhere2@gmail.com",
+    password: "abcd1234",
+  },
+  {
+    id: 3,
+    name: "Saidur Rahman3",
+    email: "saidurhere3@gmail.com",
+    password: "abcd1234",
+  },
+];
+
 // Login endpoint
 app.post("/login", (req, res) => {
-  // Implement your login logic here
-  // Verify the provided email and password against the stored user information
-  // If valid, return a success response; otherwise, return an error response
+  const { email, password } = req.body;
+
+  // Find the user with the provided email
+  const user = users.find((user) => user.email === email);
+
+  if (!user || user.password !== password) {
+    return res.status(401).json({ error: "Invalid email or password" });
+  }
+
+  res.json({ success: true, user });
 });
 
 // Upload PDF endpoint
-app.post("/upload", upload.single("pdf"), (req, res) => {
+app.post("/upload", upload.single("pdf"), async (req, res) => {
+  const { email } = req.body;
+
+  // Find the user with the provided email
+  const user = users.find((user) => user.email === email);
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
   // Create a new PDF document in the database
   const pdf = new PDF({
-    username: req.body.username,
+    username: user.name,
     pdfname: req.file.filename,
   });
 
-  pdf.save((err, pdf) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).json({ error: "Failed to save PDF" });
-    }
+  await pdf.save();
 
-    res.json({ success: true, pdf });
-  });
+  res.json({ success: true, pdf });
 });
 
 // PDF listing endpoint
-app.get("/pdfs", (req, res) => {
+app.get("/pdfs", async (req, res) => {
   // Retrieve all PDF documents from the database
-  PDF.find({}, (err, pdfs) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).json({ error: "Failed to fetch PDFs" });
-    }
+  const pdfs = await PDF.find();
 
-    res.json(pdfs);
-  });
+  res.json(pdfs);
 });
 
 // Serve PDF files endpoint
@@ -79,6 +107,6 @@ app.get("/pdfs/:filename", (req, res) => {
 });
 
 // Start the server
-app.listen(3001, () => {
+app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
