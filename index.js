@@ -7,20 +7,10 @@ const app = express();
 
 // Middleware for parsing JSON
 app.use(express.json());
+
 // Enable CORS
 app.use(cors());
-const corsOptions = {
-  origin: [
-    "http://localhost:3000",
-    "https://vibrosonic.onrender.com/",
-    "https://vibro-sonic.vercel.app",
-  ],
-  credentials: true,
-  allowedHeaders: ["Content-Type"],
-};
 
-// Apply CORS options to specific routes
-app.options("*", cors(corsOptions));
 // Connect to MongoDB
 mongoose.connect("mongodb://localhost:27017/demoapp", {
   useNewUrlParser: true,
@@ -120,7 +110,19 @@ app.get("/pdfs/:filename", (req, res) => {
   res.sendFile(`${__dirname}/uploads/${filename}`);
 });
 
+// Error handling for undefined routes
+app.use((req, res, next) => {
+  res.status(404).json({ error: "Not found" });
+});
+
+// Error handling for other errors
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: "Internal server error" });
+});
+
 // Start the server
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
