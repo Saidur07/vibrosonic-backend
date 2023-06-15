@@ -9,7 +9,18 @@ const app = express();
 app.use(express.json());
 // Enable CORS
 app.use(cors());
+const corsOptions = {
+  origin: [
+    "http://localhost:3000",
+    "https://vibrosonic.onrender.com/",
+    "https://vibro-sonic.vercel.app",
+  ],
+  credentials: true,
+  allowedHeaders: ["Content-Type"],
+};
 
+// Apply CORS options to specific routes
+app.options("*", cors(corsOptions));
 // Connect to MongoDB
 mongoose.connect("mongodb://localhost:27017/demoapp", {
   useNewUrlParser: true,
