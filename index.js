@@ -12,7 +12,6 @@ app.use(express.json());
 const allowedOrigins = [
   "http://localhost:3000",
   "https://vibrosonic.onrender.com",
-  "https://vibro-sonic.vercel.app/",
 ];
 app.use(
   cors({
