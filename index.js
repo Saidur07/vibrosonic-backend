@@ -8,18 +8,7 @@ const app = express();
 // Middleware for parsing JSON
 app.use(express.json());
 // Enable CORS
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  next();
-});
-const corsOptions = {
-  origin: ["http://localhost:3000", "https://vibro-sonic.vercel.app/"],
-  credentials: true, //access-control-allow-credentials:true
-  optionSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
+app.use(cors());
 
 // Connect to MongoDB
 mongoose.connect("mongodb://localhost:27017/demoapp", {
