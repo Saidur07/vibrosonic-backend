@@ -11,9 +11,8 @@ app.use(express.json());
 // Enable CORS
 app.use(
   cors({
-    origin: "https://vibrosonic.onrender.com",
-    headers: ["Content-Type"],
-    credentials: true,
+    origin: "http://localhost:3000", // Allow requests from the local development server
+    credentials: true, // Allow cookies to be sent along with the requests
   })
 );
 
@@ -111,10 +110,7 @@ app.get("/pdfs", async (req, res) => {
 });
 
 // Serve PDF files endpoint
-app.get("/pdfs/:filename", (req, res) => {
-  const filename = req.params.filename;
-  res.sendFile(`${__dirname}/uploads/${filename}`);
-});
+app.use("/pdfs", express.static("uploads"));
 
 // Error handling for undefined routes
 app.use((req, res, next) => {
