@@ -14,6 +14,12 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   next();
 });
+const corsOptions = {
+  origin: ["http://localhost:3000", "https://vibro-sonic.vercel.app/"],
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 
 // Connect to MongoDB
 mongoose.connect("mongodb://localhost:27017/demoapp", {
