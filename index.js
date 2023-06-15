@@ -9,7 +9,13 @@ const app = express();
 app.use(express.json());
 
 // Enable CORS
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://vibrosonic.onrender.com",
+    headers: ["Content-Type"],
+    credentials: true,
+  })
+);
 
 // Connect to MongoDB
 mongoose.connect("mongodb://localhost:27017/demoapp", {
@@ -48,15 +54,15 @@ const users = [
   },
   {
     id: 2,
-    name: "Saidur Rahman2",
-    email: "saidurhere2@gmail.com",
+    name: "Al Mustafiz Bappy",
+    email: "bappy@gmail.com",
     password: "abcd1234",
   },
   {
     id: 3,
-    name: "Saidur Rahman3",
-    email: "saidurhere3@gmail.com",
-    password: "abcd1234",
+    name: "Demo User",
+    email: "demo@demo.demo",
+    password: "demo1234",
   },
 ];
 
