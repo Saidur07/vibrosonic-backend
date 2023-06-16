@@ -101,22 +101,20 @@ app.post("/upload", upload.single("pdf"), async (req, res) => {
 
   // Create a new FormData object
   const formData = new FormData();
-  formData.append("image", req.file.buffer);
-
+  formData.append("image", req.file.buffer, {
+    filename: req.file.originalname,
+    contentType: req.file.mimetype,
+  });
+  const url =
+    "https://api.imgbb.com/1/upload?key=31e2906cfb3dfa8c95941117caeae2b6";
   try {
     // Make a POST request to the ImgBB API
-    const response = await axios.post(
-      "https://api.imgbb.com/1/upload",
-      formData,
-      {
-        params: {
-          key: "31e2906cfb3dfa8c95941117caeae2b6",
-        },
-        headers: {
-          ...formData.getHeaders(),
-        },
-      }
-    );
+    const response = await axios.post(url, formData, {
+      headers: {
+        ...formData.getHeaders(),
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
     // Extract the image URL from the response
     const imageUrl = response.data.data.url;
@@ -161,7 +159,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
