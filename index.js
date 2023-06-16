@@ -23,10 +23,20 @@ app.use(
 );
 
 // Connect to MongoDB
-mongoose.connect("mongodb://localhost:27017/demoapp", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose
+  .connect(
+    "mongodb+srv://dbuser1:ZnZVmALY1iLIhX50@cluster0.asefh.mongodb.net/demoapp?retryWrites=true&w=majority",
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  )
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((error) => {
+    console.error("Failed to connect to MongoDB:", error);
+  });
 
 // Create a Schema for PDF documents
 const pdfSchema = new mongoose.Schema({
