@@ -7,7 +7,30 @@ const app = express();
 
 // Middleware for parsing JSON
 app.use(express.json());
+// Enable CORS for multiple origins
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://vibrosonic.onrender.com",
+];
+app.use(
+  cors({
+    origin: allowedOrigins,
+    // function (origin, callback) {
+    //   // Allow requests with no origin (like mobile apps or curl requests)
+    //   if (!origin) return callback(null, true);
 
+    //   if (allowedOrigins.indexOf(origin) === -1) {
+    //     const msg =
+    //       "The CORS policy for this site does not allow access from the specified origin.";
+    //     return callback(new Error(msg), false);
+    //   }
+
+    //   return callback(null, true);
+    // },
+
+    credentials: true,
+  })
+);
 app.use((req, res, next) => {
   res.header(
     "Access-Control-Allow-Headers, *, Access-Control-Allow-Origin",
