@@ -101,7 +101,7 @@ app.post("/upload", upload.single("pdf"), async (req, res) => {
 
   // Create a new FormData object
   const formData = new FormData();
-  formData.append("image", req.file.buffer.toString("base64"));
+  formData.append("image", req.file.buffer);
 
   try {
     // Make a POST request to the ImgBB API
@@ -121,15 +121,20 @@ app.post("/upload", upload.single("pdf"), async (req, res) => {
     // Extract the image URL from the response
     const imageUrl = response.data.data.url;
 
-    // Create a new PDF document in the database with the image URL
-    const pdf = new PDF({
-      username: user.name,
-      pdfname: imageUrl,
-    });
+    try {
+      // Create a new PDF document in the database with the image URL
+      const pdf = new PDF({
+        username: user.name,
+        pdfname: imageUrl,
+      });
 
-    await pdf.save();
+      await pdf.save();
 
-    res.json({ success: true, pdf });
+      res.json({ success: true, pdf });
+    } catch (error) {
+      console.error("Error saving PDF to the database:", error);
+      res.status(500).json({ error: "Failed to save PDF" });
+    }
   } catch (error) {
     console.error("Error uploading file to ImgBB:", error);
     res.status(500).json({ error: "Failed to upload file" });
