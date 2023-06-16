@@ -2,11 +2,14 @@ const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
 const cors = require("cors");
+const axios = require("axios");
+const FormData = require("form-data");
 
 const app = express();
 
 // Middleware for parsing JSON
 app.use(express.json());
+
 // Enable CORS for multiple origins
 const allowedOrigins = [
   "http://localhost:3000",
@@ -15,34 +18,10 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: allowedOrigins,
-    // function (origin, callback) {
-    //   // Allow requests with no origin (like mobile apps or curl requests)
-    //   if (!origin) return callback(null, true);
-
-    //   if (allowedOrigins.indexOf(origin) === -1) {
-    //     const msg =
-    //       "The CORS policy for this site does not allow access from the specified origin.";
-    //     return callback(new Error(msg), false);
-    //   }
-
-    //   return callback(null, true);
-    // },
-
     credentials: true,
   })
 );
-app.use((req, res, next) => {
-  res.header(
-    "Access-Control-Allow-Headers, *, Access-Control-Allow-Origin",
-    "Origin, X-Requested-with, Content_Type,Accept,Authorization",
-    "http://localhost:3000"
-  );
-  if (req.method === "OPTIONS") {
-    res.header("Access-Control-Allow-Methods", "PUT,POST,PATCH,DELETE,GET");
-    return res.status(200).json({});
-  }
-  next();
-});
+
 // Connect to MongoDB
 mongoose.connect("mongodb://localhost:27017/demoapp", {
   useNewUrlParser: true,
@@ -60,14 +39,7 @@ const pdfSchema = new mongoose.Schema({
 const PDF = mongoose.model("PDF", pdfSchema);
 
 // Configure Multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "_" + file.originalname);
-  },
-});
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // Array of user objects
@@ -117,15 +89,41 @@ app.post("/upload", upload.single("pdf"), async (req, res) => {
     return res.status(404).json({ error: "User not found" });
   }
 
-  // Create a new PDF document in the database
-  const pdf = new PDF({
-    username: user.name,
-    pdfname: req.file.filename,
-  });
+  // Create a new FormData object
+  const formData = new FormData();
+  formData.append("image", req.file.buffer.toString("base64"));
 
-  await pdf.save();
+  try {
+    // Make a POST request to the ImgBB API
+    const response = await axios.post(
+      "https://api.imgbb.com/1/upload",
+      formData,
+      {
+        params: {
+          key: "31e2906cfb3dfa8c95941117caeae2b6",
+        },
+        headers: {
+          ...formData.getHeaders(),
+        },
+      }
+    );
 
-  res.json({ success: true, pdf });
+    // Extract the image URL from the response
+    const imageUrl = response.data.data.url;
+
+    // Create a new PDF document in the database with the image URL
+    const pdf = new PDF({
+      username: user.name,
+      pdfname: imageUrl,
+    });
+
+    await pdf.save();
+
+    res.json({ success: true, pdf });
+  } catch (error) {
+    console.error("Error uploading file to ImgBB:", error);
+    res.status(500).json({ error: "Failed to upload file" });
+  }
 });
 
 // PDF listing endpoint
@@ -135,9 +133,6 @@ app.get("/pdfs", async (req, res) => {
 
   res.json(pdfs);
 });
-
-// Serve PDF files endpoint
-app.use("/pdfs", express.static("uploads"));
 
 // Error handling for undefined routes
 app.use((req, res, next) => {
