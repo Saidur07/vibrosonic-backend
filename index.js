@@ -4,6 +4,7 @@ const multer = require("multer");
 const cors = require("cors");
 const axios = require("axios");
 const FormData = require("form-data");
+const { PDFDocument } = require("pdf-lib");
 
 const app = express();
 
@@ -136,6 +137,62 @@ app.post("/upload", upload.single("pdf"), async (req, res) => {
   } catch (error) {
     console.error("Error uploading file to ImgBB:", error);
     res.status(500).json({ error: "Failed to upload file" });
+  }
+});
+
+// Download PDF endpoint
+app.get("/download/:id", async (req, res) => {
+  const pdfId = req.params.id;
+
+  try {
+    // Find the PDF document in the database by ID
+    const pdf = await PDF.findById(pdfId);
+
+    if (!pdf) {
+      return res.status(404).json({ error: "PDF not found" });
+    }
+
+    const imageUrl = pdf.pdfname;
+
+    try {
+      // Fetch the image data from the provided URL
+      const response = await axios.get(imageUrl, {
+        responseType: "arraybuffer",
+      });
+      const imageBuffer = Buffer.from(response.data, "binary");
+
+      // Create a new PDF document
+      const pdfDoc = await PDFDocument.create();
+      const image = await pdfDoc.embedPng(imageBuffer);
+
+      // Create a new page and add the image to it
+      const page = pdfDoc.addPage();
+      page.drawImage(image, {
+        x: 0,
+        y: 0,
+        width: page.getWidth(),
+        height: page.getHeight(),
+      });
+
+      // Serialize the PDF document to a Uint8Array
+      const pdfBytes = await pdfDoc.save();
+
+      // Set the response headers for file download
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${pdfId}.pdf"`
+      );
+
+      // Send the PDF file as the response
+      res.send(pdfBytes);
+    } catch (error) {
+      console.error("Error fetching image data:", error);
+      res.status(500).json({ error: "Failed to fetch image data" });
+    }
+  } catch (error) {
+    console.error("Error finding PDF in the database:", error);
+    res.status(500).json({ error: "Failed to find PDF" });
   }
 });
 
