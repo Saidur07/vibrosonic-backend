@@ -96,6 +96,13 @@ const users = [
     email: "demo@demo.demo",
     password: "demo1234",
   },
+  {
+    id: 4,
+    name: "Vibrosonic User",
+
+    email: "user@vibrosonic.vercel.app",
+    password: "abcd1234",
+  },
 ];
 
 // Login endpoint
