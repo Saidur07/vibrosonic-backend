@@ -14,6 +14,7 @@ app.use(express.json());
 // Enable CORS for multiple origins
 const allowedOrigins = [
   "http://localhost:3000",
+"https://vibrosonic.vercel.app",
   "https://vibrosonic.onrender.com",
 ];
 app.use(
